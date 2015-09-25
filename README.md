@@ -67,4 +67,4 @@ Here are all of the available configuration options (and their defaults) for thi
 
 ## Examples
 
-TODO
+See the Packer templates at [DavidWittman/packer-openvz-templates](https://github.com/DavidWittman/packer-openvz-templates).
