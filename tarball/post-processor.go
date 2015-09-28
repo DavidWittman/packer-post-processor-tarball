@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/mitchellh/packer/common"
 	"github.com/mitchellh/packer/helper/config"
@@ -41,6 +42,13 @@ type Config struct {
 
 type PostProcessor struct {
 	config Config
+}
+
+// Result is returned on the channel which waits for output from the stdout
+// pipe to Guestfish.
+type Result struct {
+	Value string
+	Err   error
 }
 
 func (p *PostProcessor) Configure(raws ...interface{}) error {
@@ -137,12 +145,25 @@ func (p *PostProcessor) PostProcess(ui packer.Ui, artifact packer.Artifact) (pac
 		ui.Message("Finding root filesystem")
 		io.WriteString(w, "inspect-os\n")
 
-		line, err := br.ReadString('\n')
-		if err != nil && err != io.EOF {
-			return nil, false, fmt.Errorf("Failed to locate root filesystem: %s", err)
+		// Read the response from Guestfish in a goroutine so that we can timeout
+		// if it is having problems finding the root filesystem.
+		var result Result
+		input := make(chan Result)
+		go func(chan Result) {
+			line, err := br.ReadString('\n')
+			input <- Result{Value: line, Err: err}
+		}(input)
+
+		select {
+		case result = <-input:
+			if result.Err != nil && result.Err != io.EOF {
+				return nil, false, fmt.Errorf("Failed to locate root filesystem: %s", err)
+			}
+		case <-time.After(time.Second * 10):
+			return nil, false, fmt.Errorf("Failed to locate root filesystem: timed out waiting for response from Guestfish.")
 		}
-		// TODO(dw): May need more error handling here while we wait for a response from Guestfish
-		device := strings.TrimSpace(line)
+
+		device := strings.TrimSpace(result.Value)
 		ui.Message(fmt.Sprintf("Found root filesystem at %s", device))
 
 		ui.Message(fmt.Sprintf("Mounting %s to /", device))
