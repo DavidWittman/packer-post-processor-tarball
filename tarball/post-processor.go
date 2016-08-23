@@ -32,10 +32,11 @@ mkdir-mode /dev/shm 0755
 type Config struct {
 	common.PackerConfig `mapstructure:",squash"`
 
-	OutputPath        string `mapstructure:"output"`
-	TarballFile       string `mapstructure:"tarball_filename"`
-	GuestfishBinary   string `mapstructure:"guestfish_binary"`
-	KeepInputArtifact bool   `mapstructure:"keep_input_artifact"`
+	OutputPath                  string `mapstructure:"output"`
+	TarballFile                 string `mapstructure:"tarball_filename"`
+	GuestfishBinary             string `mapstructure:"guestfish_binary"`
+	KeepInputArtifact           bool   `mapstructure:"keep_input_artifact"`
+	GuestfishRootFsMountTimeout int    `mapstructure:"guestfish_root_fs_mount_timeout"`
 
 	ctx interpolate.Context
 }
@@ -71,6 +72,10 @@ func (p *PostProcessor) Configure(raws ...interface{}) error {
 
 	if p.config.OutputPath == "" {
 		p.config.OutputPath = "packer_{{.BuildName}}_tarball"
+	}
+
+	if p.config.GuestfishRootFsMountTimeout == 0 {
+		p.config.GuestfishRootFsMountTimeout = 10
 	}
 
 	if _, err := exec.LookPath(p.config.GuestfishBinary); err != nil {
@@ -127,6 +132,7 @@ func (p *PostProcessor) PostProcess(ui packer.Ui, artifact packer.Artifact) (pac
 		}
 
 		outfile += ".tar.gz"
+		timeout := p.config.GuestfishRootFsMountTimeout
 
 		gf := exec.Command(p.config.GuestfishBinary)
 		w, _ := gf.StdinPipe()
@@ -159,7 +165,7 @@ func (p *PostProcessor) PostProcess(ui packer.Ui, artifact packer.Artifact) (pac
 			if result.Err != nil && result.Err != io.EOF {
 				return nil, false, fmt.Errorf("Failed to locate root filesystem: %s", err)
 			}
-		case <-time.After(time.Second * 10):
+		case <-time.After(time.Second * time.Duration(timeout)):
 			return nil, false, fmt.Errorf("Failed to locate root filesystem: timed out waiting for response from Guestfish.")
 		}
 
