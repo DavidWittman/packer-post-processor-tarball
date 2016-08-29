@@ -52,8 +52,14 @@ Here are all of the available configuration options (and their defaults) for thi
       "_comment": "The directory to write artifacts to",
       "output": "packer_{{.BuildName}}_tarball",
 
-      "_comment": "Filename to use for the artifact. `.tar.gz` will be appended to the end",
+      "_comment": "Filename to use for the artifact. `tarball_extension` will be appended to the end",
       "tarball_filename": "packer_{{.BuildName}}",
+
+      "_comment": "Filename extension to use",
+      "tarball_extension": ".tar.xz",
+
+      "_comment": "Compression type (see tar-out in `man guestfish` for supported types)",
+      "compression": "xz",
 
       "_comment": "The Guestfish binary to use",
       "guestfish_binary": "guestfish",
