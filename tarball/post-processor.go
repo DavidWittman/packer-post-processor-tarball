@@ -34,7 +34,7 @@ type Config struct {
 
 	OutputPath                  string `mapstructure:"output"`
 	TarballFile                 string `mapstructure:"tarball_filename"`
-	TarballExtn                 string `mapstructure:"tarball_extension"`
+	TarballExtension            string `mapstructure:"tarball_extension"`
 	GuestfishBinary             string `mapstructure:"guestfish_binary"`
 	GuestfishRootFsMountTimeout int    `mapstructure:"guestfish_root_fs_mount_timeout"`
 	KeepInputArtifact           bool   `mapstructure:"keep_input_artifact"`
@@ -76,10 +76,10 @@ func (p *PostProcessor) Configure(raws ...interface{}) error {
 		p.config.OutputPath = "packer_{{.BuildName}}_tarball"
 	}
 	if p.config.Compression == "" {
-		p.config.Compression = "xz"
+		p.config.Compression = "gz"
 	}
-	if p.config.TarballExtn == "" {
-		p.config.TarballExtn = ".tar.xz"
+	if p.config.TarballExtension == "" {
+		p.config.TarballExtension = ".tar.gz"
 	}
 
 	if p.config.GuestfishRootFsMountTimeout == 0 {
@@ -140,7 +140,7 @@ func (p *PostProcessor) PostProcess(ui packer.Ui, artifact packer.Artifact) (pac
 		}
 
 		timeout := p.config.GuestfishRootFsMountTimeout
-		outfile += p.config.TarballExtn
+		outfile += p.config.TarballExtension
 
 		gf := exec.Command(p.config.GuestfishBinary)
 		w, _ := gf.StdinPipe()

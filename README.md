@@ -56,10 +56,10 @@ Here are all of the available configuration options (and their defaults) for thi
       "tarball_filename": "packer_{{.BuildName}}",
 
       "_comment": "Filename extension to use",
-      "tarball_extension": ".tar.xz",
+      "tarball_extension": ".tar.gz",
 
-      "_comment": "Compression type (see tar-out in `man guestfish` for supported types)",
-      "compression": "xz",
+      "_comment": "Compression type. E.g. `gzip`, `xz`, `bzip2`. See tar-out in guestfish(1) for all supported types.",
+      "compression": "gzip",
 
       "_comment": "The Guestfish binary to use",
       "guestfish_binary": "guestfish",
