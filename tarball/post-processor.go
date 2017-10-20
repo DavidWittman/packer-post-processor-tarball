@@ -76,7 +76,7 @@ func (p *PostProcessor) Configure(raws ...interface{}) error {
 		p.config.OutputPath = "packer_{{.BuildName}}_tarball"
 	}
 	if p.config.Compression == "" {
-		p.config.Compression = "gz"
+		p.config.Compression = "gzip"
 	}
 	if p.config.TarballExtension == "" {
 		p.config.TarballExtension = ".tar.gz"
