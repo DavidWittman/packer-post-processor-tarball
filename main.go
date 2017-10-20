@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/DavidWittman/packer-post-processor-tarball/tarball"
-	"github.com/mitchellh/packer/packer/plugin"
+	"github.com/hashicorp/packer/packer/plugin"
 )
 
 func main() {
