@@ -32,13 +32,13 @@ mkdir-mode /dev/shm 0755
 type Config struct {
 	common.PackerConfig `mapstructure:",squash"`
 
-	OutputPath                  string `mapstructure:"output"`
-	TarballFile                 string `mapstructure:"tarball_filename"`
-	TarballExtension            string `mapstructure:"tarball_extension"`
-	GuestfishBinary             string `mapstructure:"guestfish_binary"`
-	GuestfishRootFsMountTimeout int    `mapstructure:"guestfish_root_fs_mount_timeout"`
-	KeepInputArtifact           bool   `mapstructure:"keep_input_artifact"`
-	Compression                 string `mapstructure:"compression"`
+	OutputPath            string `mapstructure:"output"`
+	TarballFile           string `mapstructure:"tarball_filename"`
+	TarballExtension      string `mapstructure:"tarball_extension"`
+	GuestfishBinary       string `mapstructure:"guestfish_binary"`
+	GuestfishMountTimeout int    `mapstructure:"guestfish_mount_timeout"`
+	KeepInputArtifact     bool   `mapstructure:"keep_input_artifact"`
+	Compression           string `mapstructure:"compression"`
 
 	ctx interpolate.Context
 }
@@ -82,8 +82,8 @@ func (p *PostProcessor) Configure(raws ...interface{}) error {
 		p.config.TarballExtension = ".tar.gz"
 	}
 
-	if p.config.GuestfishRootFsMountTimeout == 0 {
-		p.config.GuestfishRootFsMountTimeout = 10
+	if p.config.GuestfishMountTimeout == 0 {
+		p.config.GuestfishMountTimeout = 10
 	}
 
 	if _, err := exec.LookPath(p.config.GuestfishBinary); err != nil {
@@ -139,7 +139,7 @@ func (p *PostProcessor) PostProcess(ui packer.Ui, artifact packer.Artifact) (pac
 			outfile = filepath.Join(newArtifact.Path, p.config.TarballFile)
 		}
 
-		timeout := p.config.GuestfishRootFsMountTimeout
+		timeout := p.config.GuestfishMountTimeout
 		outfile += p.config.TarballExtension
 
 		gf := exec.Command(p.config.GuestfishBinary)
