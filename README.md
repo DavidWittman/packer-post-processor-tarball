@@ -58,6 +58,9 @@ Here are all of the available configuration options (and their defaults) for thi
       "_comment": "The Guestfish binary to use",
       "guestfish_binary": "guestfish",
 
+      "_comment": "How long (in seconds) to wait for Guestfish to mount the file system",
+      "guestfish_root_fs_mount_timeout": 10,
+
       "_comment": "Keep the input artifact which was received by this post-processor",
       "keep_input_artifact": false
     }
