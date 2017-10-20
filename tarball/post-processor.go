@@ -34,9 +34,11 @@ type Config struct {
 
 	OutputPath                  string `mapstructure:"output"`
 	TarballFile                 string `mapstructure:"tarball_filename"`
+	TarballExtension            string `mapstructure:"tarball_extension"`
 	GuestfishBinary             string `mapstructure:"guestfish_binary"`
-	KeepInputArtifact           bool   `mapstructure:"keep_input_artifact"`
 	GuestfishRootFsMountTimeout int    `mapstructure:"guestfish_root_fs_mount_timeout"`
+	KeepInputArtifact           bool   `mapstructure:"keep_input_artifact"`
+	Compression                 string `mapstructure:"compression"`
 
 	ctx interpolate.Context
 }
@@ -72,6 +74,12 @@ func (p *PostProcessor) Configure(raws ...interface{}) error {
 
 	if p.config.OutputPath == "" {
 		p.config.OutputPath = "packer_{{.BuildName}}_tarball"
+	}
+	if p.config.Compression == "" {
+		p.config.Compression = "gz"
+	}
+	if p.config.TarballExtension == "" {
+		p.config.TarballExtension = ".tar.gz"
 	}
 
 	if p.config.GuestfishRootFsMountTimeout == 0 {
@@ -131,8 +139,8 @@ func (p *PostProcessor) PostProcess(ui packer.Ui, artifact packer.Artifact) (pac
 			outfile = filepath.Join(newArtifact.Path, p.config.TarballFile)
 		}
 
-		outfile += ".tar.gz"
 		timeout := p.config.GuestfishRootFsMountTimeout
+		outfile += p.config.TarballExtension
 
 		gf := exec.Command(p.config.GuestfishBinary)
 		w, _ := gf.StdinPipe()
@@ -179,7 +187,7 @@ func (p *PostProcessor) PostProcess(ui packer.Ui, artifact packer.Artifact) (pac
 		io.WriteString(w, makeCharDevices)
 
 		ui.Message(fmt.Sprintf("Packing filesystem into tarball %s", outfile))
-		io.WriteString(w, fmt.Sprintf("tar-out / %s compress:gzip\n", outfile))
+		io.WriteString(w, fmt.Sprintf("tar-out / %s compress:%s\n", outfile, p.config.Compression))
 		io.WriteString(w, "quit\n")
 
 		newArtifact.files = append(newArtifact.files, outfile)
